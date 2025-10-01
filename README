@@ -11,7 +11,7 @@
 
 - parameters_folder
     - your_parameters <-- *2-COMPLETE* this file your own attack parameters
-    - other are provided, these are the parameters files used to found the attack described in the paper, you can use as example to complete the 'your_parameters' file. If you want to run a search for optimal attack with one of this model, change all the occurence of 'you_parameters' in the main function by the name of the file you want to test.
+    - other are provided, these are the parameters files used to found the attack described in the paper, you can use as example to complete the 'your_parameters' file. If you want to run a search for optimal attack with one of this model, change the 'you_parameters' in the main function line 9 by the name of the file you want to test.
 
 - figure_folder : containts the generated figure pdf images, initially contains all the attack figures used in the paper.
 
