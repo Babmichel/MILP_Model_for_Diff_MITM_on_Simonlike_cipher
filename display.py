@@ -37,6 +37,7 @@ def parameters_display(parameters, solution):
         print("--- MATCH and Structure parameters ---")
         print("structure_size :", parameters['structure_size'])
         print("fix number :", solution['structure_fix'])
+        print("fix_on_first_round :", solution['structure_fix_first_round'])
         print("filtered differences :", solution['structure_match_differences'])
         if parameters["key_schedule_linearity"] == 1:
                 print("key quantity :", solution['total_key_information'] + parameters['key_size'])
@@ -47,7 +48,7 @@ def parameters_display(parameters, solution):
         print("number of rounds attacked :", parameters['structure_size'] + parameters['upper_part_size'] + parameters['lower_part_size'] + parameters['distinguisher_size'])
         print("Final time complexity :", math.log2(pow(2, solution['time_complexity_up'] + parameters["distinguisher_probability"]) + pow(2, solution['time_complexity_down'] + parameters["distinguisher_probability"]) + pow(2, solution['time_complexity_match'] + parameters["distinguisher_probability"])))
         print("Final memory complexity :", min(solution['key_quantity_up'] + solution['state_test_up_quantity'] + parameters['block_size'] - solution['structure_fix'], solution['key_quantity_down'] + solution['state_test_down_quantity'] + parameters['block_size'] - solution['structure_fix']))
-        print("Final data complexity :", parameters["distinguisher_probability"] + solution['probabilistic_key_recovery_up'] + solution['probabilistic_key_recovery_down'])
+        print("Final data complexity :", solution['data_complexity'])
         print("")
 
 
@@ -67,11 +68,13 @@ def pdf_display(parameters, solution):
         """
         mult = 1
 
+
         font_decallage = 4
         font_etat = 6
         font_legende = 8
         font_difference = 4
         font_text = 8
+        dec_K=0
 
         state_size = int(parameters['block_size']/2)
         structure_size = parameters['structure_size']
@@ -80,6 +83,13 @@ def pdf_display(parameters, solution):
         dec_mid = parameters['second_branch_shift']
         dec_down = parameters['third_branch_shift']
 
+        if 2*state_size == 48 :
+                dec_K=0.25
+                font_text = 10
+        
+        if 2*state_size == 64 :
+                dec_K=0.5
+                font_text = 12
 
         if 2*state_size == 128 :
                 font_decallage = 2
@@ -265,7 +275,7 @@ def pdf_display(parameters, solution):
                         plt.text((state_draw+0.5-4)*mult, (-n_s/2-0.25 - dec_r)*mult, f"L{r}")
                         plt.text((state_draw+13-1)*mult, (-n_s/2-0.25 - dec_r)*mult, f"R{r}", fontname="serif")
                         if r!=r_up_min:
-                                plt.text((2*state_draw+10.5)*mult, (-5*n_s/2 - 2 -0.25 - dec_r)*mult, f"K'{r}", fontname="serif")
+                                plt.text((2*state_draw+10.5+dec_K)*mult, (-5*n_s/2 - 2 -0.25 - dec_r)*mult, f"K'{r}", fontname="serif")
 
 
                         #decallage des premiers etats
@@ -280,7 +290,7 @@ def pdf_display(parameters, solution):
                                         #trait clé de gauche
                                         if j%n_s ==0 and k in [1, 3] and r!=r_up_min:
                                                 #trait droite
-                                                plt.plot([(state_draw)*mult,(state_draw+dec_up)*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
+                                                plt.plot([(state_draw)*mult,(state_draw+8)*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
                                         
                                                 #traits gauche et XOR
                                                 plt.plot([(-2)*mult,0],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="black")
@@ -290,8 +300,8 @@ def pdf_display(parameters, solution):
 
                                         #trait millieu cle de droite
                                         if j%n_s ==0 and k in [2] and r!=r_up_min:
-                                                plt.plot([(state_draw+dec_up)*mult,(state_draw+10+0.1*(state_draw//4 -1))*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
-                                                plt.plot([(state_draw+dec_up)*mult,(state_draw+dec_up)*mult],[(-1*(j-1-n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*(j+1+n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
+                                                plt.plot([(state_draw+8)*mult,(state_draw+10+0.1*(state_draw//4 -1))*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
+                                                plt.plot([(state_draw+8)*mult,(state_draw+8)*mult],[(-1*(j-1-n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*(j+1+n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
                                         
                                         #trait horizontaux millieu AND et XOR
                                         if j%n_s ==0 and k in [2, 5]:
@@ -491,7 +501,7 @@ def pdf_display(parameters, solution):
                         plt.text((state_draw+0.5-4 + dec_d)*mult, (-n_s/2-0.25 - dec_r)*mult, f"L{r+taille_distingueur+r_up_max}")
                         plt.text((state_draw+13-2 + dec_d)*mult, (-n_s/2-0.25 - dec_r)*mult, f"R{r+taille_distingueur+r_up_max}", fontname="serif")
                         if r!=r_down_max-1:
-                                plt.text((2*state_draw+10.5 + dec_d)*mult, (-5*n_s/2 - 2 -0.25 - dec_r)*mult, f"K'{r+taille_distingueur+r_up_max}", fontname="serif")
+                                plt.text((2*state_draw+10.5 + dec_d+dec_K)*mult, (-5*n_s/2 - 2 -0.25 - dec_r)*mult, f"K'{r+taille_distingueur+r_up_max}", fontname="serif")
 
 
                         #decallage des premiers etats
@@ -516,8 +526,8 @@ def pdf_display(parameters, solution):
 
                                         #trait millieu cle de droite
                                         if j%n_s ==0 and k in [2] and r!=r_down_max-1:
-                                                plt.plot([(state_draw+dec_up + dec_d)*mult,(state_draw+10+0.1*(state_draw//4 -1) + dec_d)*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
-                                                plt.plot([(state_draw+dec_up + dec_d)*mult,(state_draw+8 + dec_d)*mult],[(-1*(j-1-n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*(j+1+n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
+                                                plt.plot([(state_draw+8)*mult,(state_draw+10+0.1*(state_draw//4 -1) + dec_d)*mult],[(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*j-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
+                                                plt.plot([(state_draw+8 + dec_d)*mult,(state_draw+8 + dec_d)*mult],[(-1*(j-1-n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult,(-1*(j+1+n_s)-(n_s+1)*k-n_s/2 - dec_r)*mult], color="gray", linestyle="dotted")
                                         
                                         #trait horizontaux millieu AND et XOR
                                         if j%n_s ==0 and k in [2, 5]:
@@ -668,9 +678,9 @@ def pdf_display(parameters, solution):
         draw.add_patch(square)               
         plt.text((dec_d+1.5)*mult, ((r_down_max)*(-6*n_s-11)-6)*mult, ": This key bit is guessed by the upper part of the attack", fontname="serif", fontsize=font_legende)
 
-        square = Rectangle(((dec_d)*mult,((r_down_max)*(-6*n_s-11)+dec_up)*mult), (1)*mult, (1)*mult, facecolor="lightcoral", edgecolor = "black", linewidth=0.1)
+        square = Rectangle(((dec_d)*mult,((r_down_max)*(-6*n_s-11)-8)*mult), (1)*mult, (1)*mult, facecolor="lightcoral", edgecolor = "black", linewidth=0.1)
         draw.add_patch(square)               
-        plt.text((dec_d+1.5)*mult, ((r_down_max)*(-6*n_s-11)+dec_up)*mult, ": This state bit can be computed by the upper part of the attack", fontname="serif", fontsize=font_legende)
+        plt.text((dec_d+1.5)*mult, ((r_down_max)*(-6*n_s-11)-8)*mult, ": This state bit can be computed by the upper part of the attack", fontname="serif", fontsize=font_legende)
 
         if solution[f'state_test_up_quantity'] != 0:
                 square = Rectangle(((dec_d)*mult,((r_down_max)*(-6*n_s-11)-10)*mult), (1)*mult, (1)*mult, facecolor="gold", edgecolor = "black", linewidth=0.1)
